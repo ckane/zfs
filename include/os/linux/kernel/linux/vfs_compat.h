@@ -343,7 +343,8 @@ static inline void zfs_gid_write(struct inode *ip, gid_t gid)
 /*
  * 4.9 API change
  */
-#ifndef HAVE_SETATTR_PREPARE
+#if !(defined(HAVE_SETATTR_PREPARE_NO_USERNS) || \
+    defined(HAVE_SETATTR_PREPARE_USERNS))
 static inline int
 setattr_prepare(struct dentry *dentry, struct iattr *ia)
 {
@@ -388,6 +389,15 @@ func(const struct path *path, struct kstat *stat, u32 request_mask,	\
     unsigned int query_flags)						\
 {									\
 	return (func##_impl(path, stat, request_mask, query_flags));	\
+}
+#elif defined(HAVE_USERNS_IOPS_GETATTR)
+#define	ZPL_GETATTR_WRAPPER(func)					\
+static int								\
+func(struct user_namespace *user_ns, const struct path *path,	\
+    struct kstat *stat, u32 request_mask, unsigned int query_flags)	\
+{									\
+	return (func##_impl(user_ns, path, stat, request_mask, \
+	    query_flags));	\
 }
 #else
 #error
