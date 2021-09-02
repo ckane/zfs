@@ -23,6 +23,33 @@ AC_DEFUN([ZFS_AC_KERNEL_BLK_QUEUE_PLUG], [
 ])
 
 dnl #
+dnl # 5.15: bdi moved to  request_queue->disk
+dnl #
+AC_DEFUN([ZFS_AC_KERNEL_SRC_BLK_QUEUE_DISK_BDI], [
+	ZFS_LINUX_TEST_SRC([blk_queue_disk_bdi], [
+		#include <linux/blkdev.h>
+		#include <linux/backing-dev-defs.h>
+	],[
+		struct request_queue q;
+		struct gendisk d;
+		struct backing_dev_info bdi;
+		d.bdi = &bdi;
+		q.disk = &d;
+	])
+])
+
+AC_DEFUN([ZFS_AC_KERNEL_BLK_QUEUE_DISK_BDI], [
+	AC_MSG_CHECKING([whether bdi is in request_queue->disk])
+	ZFS_LINUX_TEST_RESULT([blk_queue_disk_bdi], [
+		AC_MSG_RESULT(yes)
+		AC_DEFINE(HAVE_BLK_QUEUE_DISK_BDI, 1,
+		    [blk queue backing_dev_info is in request_queue->disk])
+	],[
+		AC_MSG_RESULT(no)
+	])
+])
+
+dnl #
 dnl # 2.6.32 - 4.11: statically allocated bdi in request_queue
 dnl # 4.12: dynamically allocated bdi in request_queue
 dnl #
@@ -280,6 +307,7 @@ AC_DEFUN([ZFS_AC_KERNEL_BLK_QUEUE_MAX_SEGMENTS], [
 AC_DEFUN([ZFS_AC_KERNEL_SRC_BLK_QUEUE], [
 	ZFS_AC_KERNEL_SRC_BLK_QUEUE_PLUG
 	ZFS_AC_KERNEL_SRC_BLK_QUEUE_BDI
+	ZFS_AC_KERNEL_SRC_BLK_QUEUE_DISK_BDI
 	ZFS_AC_KERNEL_SRC_BLK_QUEUE_DISCARD
 	ZFS_AC_KERNEL_SRC_BLK_QUEUE_SECURE_ERASE
 	ZFS_AC_KERNEL_SRC_BLK_QUEUE_FLAG_SET
@@ -292,6 +320,7 @@ AC_DEFUN([ZFS_AC_KERNEL_SRC_BLK_QUEUE], [
 AC_DEFUN([ZFS_AC_KERNEL_BLK_QUEUE], [
 	ZFS_AC_KERNEL_BLK_QUEUE_PLUG
 	ZFS_AC_KERNEL_BLK_QUEUE_BDI
+	ZFS_AC_KERNEL_BLK_QUEUE_DISK_BDI
 	ZFS_AC_KERNEL_BLK_QUEUE_DISCARD
 	ZFS_AC_KERNEL_BLK_QUEUE_SECURE_ERASE
 	ZFS_AC_KERNEL_BLK_QUEUE_FLAG_SET

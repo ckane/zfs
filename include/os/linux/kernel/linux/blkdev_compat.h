@@ -30,6 +30,7 @@
 #define	_ZFS_BLKDEV_H
 
 #include <linux/blkdev.h>
+#include <linux/backing-dev-defs.h>
 #include <linux/elevator.h>
 #include <linux/backing-dev.h>
 #include <linux/hdreg.h>
@@ -92,7 +93,9 @@ blk_queue_set_write_cache(struct request_queue *q, bool wc, bool fua)
 static inline void
 blk_queue_set_read_ahead(struct request_queue *q, unsigned long ra_pages)
 {
-#ifdef HAVE_BLK_QUEUE_BDI_DYNAMIC
+#ifdef HAVE_BLK_QUEUE_DISK_BDI
+	q->disk->bdi->ra_pages = ra_pages;
+#elif defined(HAVE_BLK_QUEUE_BDI_DYNAMIC)
 	q->backing_dev_info->ra_pages = ra_pages;
 #else
 	q->backing_dev_info.ra_pages = ra_pages;
