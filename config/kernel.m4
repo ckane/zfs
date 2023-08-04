@@ -644,6 +644,7 @@ dnl # ZFS_LINUX_TEST_PROGRAM(C)([PROLOGUE], [BODY])
 dnl #
 m4_define([ZFS_LINUX_TEST_PROGRAM], [
 #include <linux/module.h>
+#include <linux/kconfig.h>
 $1
 
 int
